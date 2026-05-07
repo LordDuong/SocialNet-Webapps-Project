@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>About - Social Network</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f5f5;
+        }
+
+        .menubar {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 0;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .menu-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 20px;
+        }
+
+        .menu-left {
+            flex: 0 0 auto;
+        }
+
+        .logo {
+            color: white;
+            font-size: 24px;
+            font-weight: 700;
+            margin: 0;
+        }
+
+        .menu-center {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin: 0 30px;
+        }
+
+        .menu-right {
+            flex: 0 0 auto;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .menu-link {
+            color: white;
+            text-decoration: none;
+            font-weight: 500;
+            padding: 8px 12px;
+            border-radius: 5px;
+            transition: all 0.3s;
+            white-space: nowrap;
+        }
+
+        .menu-link:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+        }
+
+        .menu-link.active {
+            background: rgba(255, 255, 255, 0.3);
+            border-bottom: 2px solid white;
+        }
+
+        .user-info {
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 14px;
+        }
+
+        .signout-link {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 8px 15px;
+        }
+
+        .signout-link:hover {
+            background: rgba(255, 0, 0, 0.3);
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 30px auto;
+            padding: 0 20px;
+        }
+
+        .about-card {
+            background: white;
+            border-radius: 10px;
+            padding: 50px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .about-title {
+            font-size: 32px;
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .about-content {
+            color: #666;
+            line-height: 1.8;
+            font-size: 16px;
+            margin-bottom: 30px;
+        }
+
+        .section {
+            margin-bottom: 40px;
+        }
+
+        .section-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: #667eea;
+            margin-bottom: 15px;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 10px;
+        }
+
+        .info-box {
+            background: #f5f5f5;
+            padding: 20px;
+            border-left: 4px solid #667eea;
+            border-radius: 5px;
+            margin-bottom: 15px;
+        }
+
+        .info-box h3 {
+            color: #333;
+            margin-bottom: 8px;
+            font-size: 16px;
+        }
+
+        .info-box p {
+            color: #666;
+            margin: 0;
+            font-size: 14px;
+        }
+
+        .student-info {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 10px;
+            text-align: center;
+            margin: 30px 0;
+        }
+
+        .student-info h2 {
+            font-size: 24px;
+            margin-bottom: 15px;
+        }
+
+        .student-info p {
+            font-size: 16px;
+            margin-bottom: 8px;
+        }
+
+        .student-number {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        .btn-back {
+            display: inline-block;
+            background: #667eea;
+            color: white;
+            padding: 12px 30px;
+            border-radius: 5px;
+            text-decoration: none;
+            font-weight: 600;
+            margin-top: 20px;
+            transition: all 0.3s;
+        }
+
+        .btn-back:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        @media (max-width: 768px) {
+            .menu-container {
+                flex-wrap: wrap;
+                gap: 10px;
+            }
+
+            .menu-left {
+                flex: 1 1 100%;
+                text-align: center;
+            }
+
+            .menu-center {
+                flex: 1 1 100%;
+                justify-content: space-around;
+                margin: 0;
+                gap: 10px;
+                padding: 10px 0;
+                border-top: 1px solid rgba(255, 255, 255, 0.2);
+            }
+
+            .menu-right {
+                flex: 1 1 100%;
+                justify-content: center;
+                gap: 10px;
+                padding-top: 10px;
+                border-top: 1px solid rgba(255, 255, 255, 0.2);
+            }
+
+            .user-info {
+                display: none;
+            }
+
+            .about-card {
+                padding: 20px;
+            }
+
+            .about-title {
+                font-size: 24px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Menu Bar -->
+    <nav class="menubar">
+        <div class="menu-container">
+            <div class="menu-left">
+                <h2 class="logo">SocialNet</h2>
+            </div>
+            <div class="menu-center">
+                <a href="./index.php" class="menu-link">🏠 Home</a>
+                <a href="./profile.php" class="menu-link">👤 Profile</a>
+                <a href="./setting.php" class="menu-link">⚙️ Setting</a>
+                <a href="./about.html" class="menu-link active">ℹ️ About</a>
+            </div>
+            <div class="menu-right">
+                <span class="user-info" id="userInfo">Welcome</span>
+                <a href="./signout.php" class="menu-link signout-link">🚪 Sign Out</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- About Content -->
+    <div class="container">
+        <div class="about-card">
+            <h1 class="about-title">ℹ️ About This Project</h1>
+
+            <div class="student-info">
+                <h2>👤 Student Information</h2>
+                <p><strong>Student Name:</strong> Nguyễn Thái Dương</p>
+                <p class="student-number"><strong>Student Number:</strong> 20210123</p>
+            </div>
+
+            <div class="section">
+                <h2 class="section-title">📋 Project Overview</h2>
+                <div class="about-content">
+                    <p>This is a <strong>Social Network Web Application</strong> built with PHP and MySQL. The application allows users to create accounts, log in, view other users' profiles, and manage their personal information.</p>
+                </div>
+            </div>
+
+            <div class="section">
+                <h2 class="section-title">✨ Features</h2>
+                <div class="info-box">
+                    <h3>🔐 User Authentication</h3>
+                    <p>Secure login and registration system with password hashing using bcrypt.</p>
+                </div>
+                <div class="info-box">
+                    <h3>👥 User Profiles</h3>
+                    <p>View and manage user profiles with customizable descriptions and information.</p>
+                </div>
+                <div class="info-box">
+                    <h3>⚙️ Settings Management</h3>
+                    <p>Users can edit their profile information and update their descriptions.</p>
+                </div>
+                <div class="info-box">
+                    <h3>🏠 Home Feed</h3>
+                    <p>Browse all users in the system and view their profiles.</p>
+                </div>
+            </div>
+
+            <div class="section">
+                <h2 class="section-title">🛠️ Technologies Used</h2>
+                <div class="info-box">
+                    <h3>Frontend</h3>
+                    <p>HTML5, CSS3, JavaScript (ES6+)</p>
+                </div>
+                <div class="info-box">
+                    <h3>Backend</h3>
+                    <p>PHP 7.4</p>
+                </div>
+                <div class="info-box">
+                    <h3>Database</h3>
+                    <p>MySQL / MariaDB</p>
+                </div>
+                <div class="info-box">
+                    <h3>Web Server</h3>
+                    <p>Nginx</p>
+                </div>
+            </div>
+
+            <div class="section">
+                <h2 class="section-title">📁 Project Structure</h2>
+                <div class="info-box">
+                    <h3>Directory Layout</h3>
+                    <p>
+                        /var/www/socialnet/<br>
+                        ├── config.php (Database configuration)<br>
+                        ├── admin/ (Admin pages)<br>
+                        │   ├── newuser.html (User creation form)<br>
+                        │   └── newuser.php (User creation backend)<br>
+                        └── socialnet/ (Main application)<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;├── signin.html (Login form)<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;├── signin.php (Login backend)<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;├── index.php (Home page)<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;├── profile.php (User profile)<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;├── setting.php (User settings)<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;├── about.html (This page)<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;└── signout.php (Logout)
+                    </p>
+                </div>
+            </div>
+
+            <a href="./index.php" class="btn-back">← Back to Home</a>
+        </div>
+    </div>
+
+    <script>
+        // Display current user info if session exists
+        document.addEventListener('DOMContentLoaded', function() {
+            // Since this is static HTML, we can't directly access PHP session
+            // But the menu bar will still work because it links to PHP pages
+            const userInfo = document.getElementById('userInfo');
+            const userName = localStorage.getItem('userName');
+            if (userName) {
+                userInfo.textContent = 'Welcome, ' + userName;
+            }
+        });
+    </script>
+</body>
+</html>
