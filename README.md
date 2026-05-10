@@ -1,6 +1,7 @@
 # SocialNet - Social Network Web Application
 
 A simple social network application built with PHP, MySQL, and Nginx. Users can create accounts, manage profiles, upload avatars (new feature), and share images (new feature).
+* Important note: please fill in '...' in config.php to test the project
 
 ## Project Information
 
