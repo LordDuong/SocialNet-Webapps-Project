@@ -12,7 +12,7 @@ require_once '../config.php';
 
 // Get current user info
 $current_user_id = $_SESSION['user_id'];
-$query = "SELECT id, username, fullname, description FROM account WHERE id = ?";
+$query = "SELECT id, username, fullname, description, avatar FROM account WHERE id = ?";
 $stmt = $conn->prepare($query);
 $stmt->bind_param("i", $current_user_id);
 $stmt->execute();
@@ -21,7 +21,7 @@ $current_user = $result->fetch_assoc();
 $stmt->close();
 
 // Get all users except current user
-$all_users_query = "SELECT id, username, fullname, description FROM account WHERE id != ? ORDER BY fullname ASC";
+$all_users_query = "SELECT id, username, fullname, description, avatar FROM account WHERE id != ? ORDER BY fullname ASC";
 $stmt = $conn->prepare($all_users_query);
 $stmt->bind_param("i", $current_user_id);
 $stmt->execute();
@@ -341,10 +341,16 @@ $stmt->close();
         <div class="main-content">
             <!-- Current User Card -->
             <div class="current-user-card">
-                <div class="user-avatar">👤</div>
                 <div class="user-name"><?php echo htmlspecialchars($current_user['fullname']); ?></div>
                 <div class="user-username">@<?php echo htmlspecialchars($current_user['username']); ?></div>
-                
+                <div class="user-avatar">
+ 		    <?php if ($current_user['avatar']): ?>
+    			<img src="../<?php echo htmlspecialchars($current_user['avatar']); ?>"
+             		     style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">
+    		    <?php else: ?>
+        		👤
+    		    <?php endif; ?>
+	    	</div>
                 <div class="user-section-title">About</div>
                 <div class="user-description">
                     <?php 
@@ -360,7 +366,14 @@ $stmt->close();
                     <div class="users-grid">
                         <?php while ($user = $all_users->fetch_assoc()): ?>
                             <div class="user-card">
-                                <div class="user-card-avatar">👤</div>
+  				<div class="user-card-avatar">
+				    <?php if ($user['avatar']): ?>
+    					<img src="../<?php echo htmlspecialchars($user['avatar']); ?>"
+             				     style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">
+    				    <?php else: ?>
+        		    		👤
+    				    <?php endif; ?>
+		     		</div>
                                 <div class="user-card-name"><?php echo htmlspecialchars($user['fullname']); ?></div>
                                 <div class="user-card-username">@<?php echo htmlspecialchars($user['username']); ?></div>
                                 <div class="user-card-description">

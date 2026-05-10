@@ -14,7 +14,7 @@ require_once '../config.php';
 $owner = isset($_GET['owner']) ? trim($_GET['owner']) : $_SESSION['username'];
 
 // Get profile user info
-$query = "SELECT id, username, fullname, description FROM account WHERE username = ?";
+$query = "SELECT id, username, fullname, description, avatar FROM account WHERE username = ?";
 $stmt = $conn->prepare($query);
 $stmt->bind_param("s", $owner);
 $stmt->execute();
@@ -63,6 +63,59 @@ $profile_user = $result->fetch_assoc();
 $stmt->close();
 
 $is_own_profile = ($_SESSION['username'] === $profile_user['username']);
+
+// Handle image upload
+$upload_message = '';
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && $is_own_profile) {
+    if (isset($_FILES['post_image']) && $_FILES['post_image']['size'] > 0) {
+        $file = $_FILES['post_image'];
+        $allowed_types = ['image/jpeg', 'image/png', 'image/gif'];
+        $max_size = 10 * 1024 * 1024; // 10MB
+
+        if (!in_array($file['type'], $allowed_types)) {
+            $upload_message = 'Only JPG, PNG, GIF files are allowed';
+        } elseif ($file['size'] > $max_size) {
+            $upload_message = 'File size must be less than 10MB';
+        } else {
+            // Generate unique filename
+            $file_ext = pathinfo($file['name'], PATHINFO_EXTENSION);
+            $new_filename = 'post_' . $profile_user['id'] . '_' . time() . '.' . $file_ext;
+            $upload_path = '../uploads/posts/' . $new_filename;
+
+            // Create posts folder if not exists
+            if (!is_dir('../uploads/posts')) {
+                mkdir('../uploads/posts', 0777, true);
+            }
+
+            // Move uploaded file
+            if (move_uploaded_file($file['tmp_name'], $upload_path)) {
+                // Insert into database
+                $insertQuery = "INSERT INTO posts (user_id, image) VALUES (?, ?)";
+                $stmt = $conn->prepare($insertQuery);
+                $image_path = 'uploads/posts/' . $new_filename;
+                $stmt->bind_param("is", $profile_user['id'], $image_path);
+
+                if ($stmt->execute()) {
+                    $upload_message = 'Post uploaded successfully!';
+                } else {
+                    $upload_message = 'Error saving post to database';
+                    unlink($upload_path);
+                }
+                $stmt->close();
+            } else {
+                $upload_message = 'Error uploading file';
+            }
+        }
+    }
+}
+
+// Get user posts
+$postsQuery = "SELECT id, image, created_at FROM posts WHERE user_id = ? ORDER BY created_at DESC";
+$stmt = $conn->prepare($postsQuery);
+$stmt->bind_param("i", $profile_user['id']);
+$stmt->execute();
+$posts_result = $stmt->get_result();
+$stmt->close();
 ?>
 
 <!DOCTYPE html>
@@ -345,18 +398,25 @@ $is_own_profile = ($_SESSION['username'] === $profile_user['username']);
     <!-- Profile Content -->
     <div class="container">
         <div class="profile-card">
-            <div class="profile-avatar">👤</div>
+
             <div class="profile-name"><?php echo htmlspecialchars($profile_user['fullname']); ?></div>
             <div class="profile-username">@<?php echo htmlspecialchars($profile_user['username']); ?></div>
-            
+            <div class="profile-avatar">
+                <?php if ($profile_user['avatar']): ?>
+                    <img src="../<?php echo htmlspecialchars($profile_user['avatar']); ?>"
+                         style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">
+                <?php else: ?>
+                    👤
+                <?php endif; ?>
+            </div>
             <?php if ($is_own_profile): ?>
-                <div class="profile-owner-label">📌 Your Profile</div>
+                <div class="profile-owner-label">Your Profile</div>
             <?php endif; ?>
 
             <div class="section-title">About This User</div>
             <div class="profile-description">
-                <?php 
-                echo $profile_user['description'] ? htmlspecialchars($profile_user['description']) : '(No description yet)'; 
+                <?php
+                echo $profile_user['description'] ? htmlspecialchars($profile_user['description']) : '(No description yet)';
                 ?>
             </div>
 
@@ -366,6 +426,60 @@ $is_own_profile = ($_SESSION['username'] === $profile_user['username']);
                 <?php endif; ?>
                 <a href="./index.php" class="btn btn-back">← Back to Home</a>
             </div>
+
+            <?php if ($is_own_profile): ?>
+                <!-- Upload Post Image Form -->
+                <div style="margin-top: 40px; padding-top: 30px; border-top: 2px solid #eee;">
+                    <h3 style="font-size: 18px; color: #667eea; margin-bottom: 20px;">📸 Upload Post Image</h3>
+                    
+                    <?php if (!empty($upload_message)): ?>
+                        <div style="background: <?php echo strpos($upload_message, 'successfully') ? '#d4edda' : '#f8d7da'; ?>; 
+                                    color: <?php echo strpos($upload_message, 'successfully') ? '#155724' : '#721c24'; ?>; 
+                                    padding: 12px; border-radius: 5px; margin-bottom: 15px;">
+                            <?php echo htmlspecialchars($upload_message); ?>
+                        </div>
+                    <?php endif; ?>
+
+                    <form method="POST" enctype="multipart/form-data">
+                        <div style="margin-bottom: 15px;">
+                            <input type="file" name="post_image" accept="image/*" required
+                                   style="padding: 10px; border: 1px solid #ddd; border-radius: 5px; width: 100%; box-sizing: border-box;">
+                            <p style="font-size: 12px; color: #888; margin-top: 5px;">JPG, PNG, GIF (Max 10MB)</p>
+                        </div>
+                        <button type="submit" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
+                                                      color: white; padding: 10px 20px; border: none; border-radius: 5px; 
+                                                      cursor: pointer; font-weight: 600; width: 100%;">
+                            📤 Post Image
+                        </button>
+                    </form>
+                </div>
+            <?php endif; ?>
+
+            <!-- Gallery of Posts -->
+            <?php if ($posts_result->num_rows > 0): ?>
+                <div style="margin-top: 40px; padding-top: 30px; border-top: 2px solid #eee;">
+                    <h3 style="font-size: 18px; color: #667eea; margin-bottom: 20px;">📷 Posts (<?php echo $posts_result->num_rows; ?>)</h3>
+                    
+                    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 15px;">
+                        <?php 
+                        $posts_result->data_seek(0);
+                        while ($post = $posts_result->fetch_assoc()): 
+                        ?>
+                            <div style="position: relative; border-radius: 8px; cursor: pointer;
+                                        box-shadow: 0 2px 8px rgba(0,0,0,0.1); transition: transform 0.3s;"
+                                 onmouseover="this.style.transform='scale(1.05)'" 
+                                 onmouseout="this.style.transform='scale(1)'">
+                                <img src="../<?php echo htmlspecialchars($post['image']); ?>" 
+                                     style="width: 100%; max-width: 250px; height: auto; display: block;">
+                                <div style="position: absolute; bottom: 0; left: 0; right: 0; background: rgba(0,0,0,0.5); 
+                                            color: white; padding: 8px; font-size: 12px;">
+                                    <?php echo date('M d, Y', strtotime($post['created_at'])); ?>
+                                </div>
+                            </div>
+                        <?php endwhile; ?>
+                    </div>
+                </div>
+            <?php endif; ?>
         </div>
     </div>
 </body>

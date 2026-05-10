@@ -24,33 +24,73 @@ $current_user = $result->fetch_assoc();
 $stmt->close();
 
 // Handle form submission
+// Handle form submission
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $fullname = isset($_POST['fullname']) ? trim($_POST['fullname']) : '';
     $description = isset($_POST['description']) ? trim($_POST['description']) : '';
+    $avatar = $current_user['avatar']; // Keep old avatar if no new upload
 
     // Validation
     if (empty($fullname)) {
         $message = 'Full name is required';
         $message_type = 'error';
     } else {
-        // Update user info
-        $updateQuery = "UPDATE account SET fullname = ?, description = ? WHERE id = ?";
-        $stmt = $conn->prepare($updateQuery);
-        $stmt->bind_param("ssi", $fullname, $description, $current_user_id);
+        // Handle avatar upload
+        if (isset($_FILES['avatar']) && $_FILES['avatar']['size'] > 0) {
+            $file = $_FILES['avatar'];
+            $allowed_types = ['image/jpeg', 'image/png', 'image/gif'];
+            $max_size = 5 * 1024 * 1024; // 5MB
 
-        if ($stmt->execute()) {
-            // Update session
-            $_SESSION['fullname'] = $fullname;
-            $current_user['fullname'] = $fullname;
-            $current_user['description'] = $description;
-            
-            $message = 'Profile updated successfully!';
-            $message_type = 'success';
-        } else {
-            $message = 'Error updating profile: ' . $conn->error;
-            $message_type = 'error';
+            // Validation
+            if (!in_array($file['type'], $allowed_types)) {
+                $message = 'Only JPG, PNG, GIF files are allowed';
+                $message_type = 'error';
+            } elseif ($file['size'] > $max_size) {
+                $message = 'File size must be less than 5MB';
+                $message_type = 'error';
+            } else {
+                // Generate unique filename
+                $file_ext = pathinfo($file['name'], PATHINFO_EXTENSION);
+                $new_filename = 'avatar_' . $current_user_id . '_' . time() . '.' . $file_ext;
+                $upload_path = '../uploads/avatars/' . $new_filename;
+
+                // Move uploaded file
+                if (move_uploaded_file($file['tmp_name'], $upload_path)) {
+                    // Delete old avatar if exists
+                    if ($current_user['avatar'] && file_exists($current_user['avatar'])) {
+                        unlink($current_user['avatar']);
+                    }
+                    $avatar = 'uploads/avatars/' . $new_filename;
+                } else {
+                    $message = 'Error uploading file';
+                    $message_type = 'error';
+                    $avatar = $current_user['avatar'];
+                }
+            }
         }
-        $stmt->close();
+
+        // If no error from file upload
+        if ($message_type !== 'error') {
+            // Update user info
+            $updateQuery = "UPDATE account SET fullname = ?, description = ?, avatar = ? WHERE id = ?";
+            $stmt = $conn->prepare($updateQuery);
+            $stmt->bind_param("sssi", $fullname, $description, $avatar, $current_user_id);
+
+            if ($stmt->execute()) {
+                // Update session
+                $_SESSION['fullname'] = $fullname;
+                $current_user['fullname'] = $fullname;
+                $current_user['description'] = $description;
+                $current_user['avatar'] = $avatar;
+                
+                $message = 'Profile updated successfully!';
+                $message_type = 'success';
+            } else {
+                $message = 'Error updating profile: ' . $conn->error;
+                $message_type = 'error';
+            }
+            $stmt->close();
+        }
     }
 }
 ?>
@@ -373,14 +413,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 </div>
             <?php endif; ?>
 
-            <form method="POST">
+            <form method="POST" enctype="multipart/form-data">
                 <div class="form-group">
                     <label for="fullname">Full Name</label>
                     <input type="text" id="fullname" name="fullname" required 
                            value="<?php echo htmlspecialchars($current_user['fullname']); ?>"
                            placeholder="Enter your full name">
                 </div>
-
+                <div class="form-group">
+                    <label for="avatar">Avatar (Profile Picture)</label>
+                    <div style="margin-bottom: 15px;">
+                        <?php if ($current_user['avatar'] && file_exists($current_user['avatar'])): ?>
+                            <img src="<?php echo htmlspecialchars($current_user['avatar']); ?>" 
+                                 style="width: 100px; height: 100px; border-radius: 50%; object-fit: cover; margin-bottom: 10px;">
+                            <p style="font-size: 12px; color: #888;">Current avatar</p>
+                        <?php endif; ?>
+                    </div>
+                    <input type="file" id="avatar" name="avatar" accept="image/*" 
+                           style="padding: 10px; border: 1px solid #ddd; border-radius: 5px; width: 100%;">
+                    <div class="form-info">💡 JPG, PNG, GIF (Max 5MB). Upload a new image to replace current avatar</div>
+                </div>
                 <div class="form-group">
                     <label for="description">About You</label>
                     <textarea id="description" name="description" 
