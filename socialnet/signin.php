@@ -23,11 +23,8 @@ if (empty($username) || empty($password)) {
 }
 
 // Query database for user
-$query = "SELECT id, username, fullname, password FROM account WHERE username = ?";
-$stmt = $conn->prepare($query);
-$stmt->bind_param("s", $username);
-$stmt->execute();
-$result = $stmt->get_result();
+$query = "SELECT id, username, fullname, password FROM account WHERE username = '$username'";
+$result = $conn->query($query);
 
 // Check if user exists
 if ($result->num_rows === 0) {
@@ -37,7 +34,6 @@ if ($result->num_rows === 0) {
 }
 
 $user = $result->fetch_assoc();
-$stmt->close();
 
 // Verify password
 if (!password_verify($password, $user['password'])) {

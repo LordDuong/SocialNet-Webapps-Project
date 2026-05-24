@@ -72,11 +72,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         // If no error from file upload
         if ($message_type !== 'error') {
             // Update user info
-            $updateQuery = "UPDATE account SET fullname = ?, description = ?, avatar = ? WHERE id = ?";
-            $stmt = $conn->prepare($updateQuery);
-            $stmt->bind_param("sssi", $fullname, $description, $avatar, $current_user_id);
+            $updateQuery = "UPDATE account SET fullname = '$fullname', description = '$description' WHERE id = $current_user_id";
+            $result = $conn->query($updateQuery);
 
-            if ($stmt->execute()) {
+            if ($result) {
                 // Update session
                 $_SESSION['fullname'] = $fullname;
                 $current_user['fullname'] = $fullname;
@@ -89,7 +88,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $message = 'Error updating profile: ' . $conn->error;
                 $message_type = 'error';
             }
-            $stmt->close();
         }
     }
 }

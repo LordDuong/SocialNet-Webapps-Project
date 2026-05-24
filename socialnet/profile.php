@@ -14,11 +14,8 @@ require_once '../config.php';
 $owner = isset($_GET['owner']) ? trim($_GET['owner']) : $_SESSION['username'];
 
 // Get profile user info
-$query = "SELECT id, username, fullname, description, avatar FROM account WHERE username = ?";
-$stmt = $conn->prepare($query);
-$stmt->bind_param("s", $owner);
-$stmt->execute();
-$result = $stmt->get_result();
+$query = "SELECT id, username, fullname, description, avatar FROM account WHERE username = '$owner'";
+$result = $conn->query($query);
 
 if ($result->num_rows === 0) {
     $conn->close();
@@ -60,7 +57,6 @@ if ($result->num_rows === 0) {
 }
 
 $profile_user = $result->fetch_assoc();
-$stmt->close();
 
 $is_own_profile = ($_SESSION['username'] === $profile_user['username']);
 
@@ -416,7 +412,7 @@ $stmt->close();
             <div class="section-title">About This User</div>
             <div class="profile-description">
                 <?php
-                echo $profile_user['description'] ? htmlspecialchars($profile_user['description']) : '(No description yet)';
+                echo $profile_user['description'] ? $profile_user['description'] : '(No description yet)';
                 ?>
             </div>
 
